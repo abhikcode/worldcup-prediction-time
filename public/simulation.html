@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>World Cup 2026 — Monte Carlo Projection</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0c0d11; --bg2:#121419; --panel:#15171e; --panel2:#1b1e27;
+  --line:#262a35; --line2:#333846;
+  --ink:#eef1f6; --ink2:#9aa3b4; --ink3:#5f6678;
+  --gold:#f6c945; --gold2:#ffd866;
+  --pitch:#16d98c; --pitch2:#0fae6f;
+  --uefa:#5b8cff; --conmebol:#f6c945; --caf:#16d98c; --concacaf:#ff6f5e; --afc:#c084fc; --ofc:#5fd0e0;
+  --host:#ff6f5e;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:
+    radial-gradient(1200px 600px at 85% -10%, rgba(246,201,69,.07), transparent 60%),
+    radial-gradient(900px 500px at -5% 10%, rgba(22,217,140,.06), transparent 55%),
+    var(--bg);
+  color:var(--ink); font-family:'Manrope',sans-serif; line-height:1.5;
+  -webkit-font-smoothing:antialiased; padding-bottom:80px;
+}
+.wrap{max-width:1180px;margin:0 auto;padding:0 22px}
+::selection{background:var(--gold);color:#000}
+
+/* ---------- header ---------- */
+header{position:relative;padding:54px 0 30px;border-bottom:1px solid var(--line);overflow:hidden}
+.kicker{display:flex;align-items:center;gap:10px;font-family:'JetBrains Mono',monospace;
+  font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin-bottom:14px}
+.kicker .dot{width:7px;height:7px;border-radius:50%;background:var(--pitch);box-shadow:0 0 12px var(--pitch);animation:pulse 2.4s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+h1{font-family:'Anton',sans-serif;font-weight:400;font-size:clamp(40px,8.5vw,92px);line-height:.92;
+  letter-spacing:.005em;text-transform:uppercase}
+h1 .yr{color:var(--gold);-webkit-text-stroke:0}
+h1 .out{color:transparent;-webkit-text-stroke:1.6px var(--ink2)}
+.sub{margin-top:18px;max-width:620px;color:var(--ink2);font-size:15.5px}
+.sub b{color:var(--ink);font-weight:700}
+.statline{display:flex;flex-wrap:wrap;gap:30px;margin-top:26px}
+.stat .n{font-family:'Anton',sans-serif;font-size:34px;color:var(--ink);line-height:1}
+.stat .n .u{font-size:15px;color:var(--gold);font-family:'JetBrains Mono',monospace;margin-left:4px}
+.stat .l{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--ink3);margin-top:6px}
+
+/* ---------- tabs ---------- */
+.tabs{display:flex;gap:4px;margin:30px 0 8px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.tab{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink3);background:none;border:none;padding:13px 16px;cursor:pointer;position:relative;transition:color .2s}
+.tab:hover{color:var(--ink2)}
+.tab.on{color:var(--ink)}
+.tab.on::after{content:"";position:absolute;left:14px;right:14px;bottom:-1px;height:2px;background:var(--gold)}
+
+section{display:none;padding-top:30px;animation:fade .4s ease}
+section.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+.sechead{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:16px;margin-bottom:22px}
+.sechead h2{font-family:'Anton',sans-serif;font-weight:400;font-size:26px;text-transform:uppercase;letter-spacing:.01em}
+.sechead p{color:var(--ink2);font-size:13.5px;max-width:540px;margin-top:5px}
+
+/* ---------- controls ---------- */
+.ctrls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.seg{display:flex;background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:3px;gap:2px}
+.seg button{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.05em;color:var(--ink3);
+  background:none;border:none;padding:7px 11px;border-radius:6px;cursor:pointer;transition:.15s;text-transform:uppercase}
+.seg button:hover{color:var(--ink2)}
+.seg button.on{background:var(--gold);color:#000;font-weight:700}
+.search{background:var(--panel);border:1px solid var(--line);border-radius:9px;color:var(--ink);
+  font-family:'Manrope';font-size:13px;padding:8px 12px;outline:none;width:160px}
+.search:focus{border-color:var(--line2)}
+.search::placeholder{color:var(--ink3)}
+
+/* ---------- title race bars ---------- */
+.race{display:flex;flex-direction:column;gap:9px}
+.rrow{display:grid;grid-template-columns:30px 168px 1fr 64px;align-items:center;gap:14px;
+  padding:7px 0;border-bottom:1px solid var(--line);cursor:default}
+.rrow .rk{font-family:'Anton',sans-serif;font-size:18px;color:var(--ink3);text-align:center}
+.rrow:nth-child(1) .rk{color:var(--gold)}
+.rrow .tm{display:flex;align-items:center;gap:9px;font-weight:700;font-size:14.5px}
+.rrow .tm .fl{font-size:18px;width:24px;text-align:center}
+.rrow .tag{font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:.06em;padding:2px 5px;border-radius:4px;
+  border:1px solid var(--line2);color:var(--ink2);text-transform:uppercase}
+.bar{height:24px;background:var(--panel);border-radius:6px;overflow:hidden;position:relative}
+.bar .fill{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--pitch2),var(--gold));
+  width:0;transition:width 1s cubic-bezier(.2,.8,.2,1)}
+.rrow .pct{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:15px;text-align:right;color:var(--ink)}
+.host-badge{font-size:9px;color:var(--host);font-family:'JetBrains Mono',monospace;letter-spacing:.05em}
+
+/* ---------- progression table ---------- */
+.tbl{width:100%;border-collapse:collapse;font-size:13.5px}
+.tbl thead th{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink3);text-align:right;padding:10px 10px;border-bottom:1px solid var(--line2);cursor:pointer;user-select:none;white-space:nowrap}
+.tbl thead th:first-child,.tbl thead th:nth-child(2){text-align:left}
+.tbl thead th:hover{color:var(--ink)}
+.tbl thead th.sorted{color:var(--gold)}
+.tbl tbody td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:right;font-family:'JetBrains Mono',monospace;font-weight:500}
+.tbl tbody td.tname{text-align:left;font-family:'Manrope';font-weight:700;font-size:14px;display:flex;align-items:center;gap:8px}
+.tbl tbody td.tname .fl{font-size:16px}
+.tbl tbody td.gp{text-align:left;color:var(--ink3)}
+.tbl tbody tr{transition:background .15s}
+.tbl tbody tr:hover{background:var(--panel)}
+.cellbar{position:relative;z-index:1}
+.cellbar::before{content:"";position:absolute;inset:0;z-index:-1;background:currentColor;opacity:.12;border-radius:4px;
+  transform-origin:right;transform:scaleX(var(--w,0))}
+td.win.cellbar::before{background:var(--gold);opacity:.18}
+
+/* ---------- groups ---------- */
+.ggrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(258px,1fr));gap:14px}
+.gcard{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 16px 14px;transition:.2s}
+.gcard:hover{border-color:var(--line2);transform:translateY(-2px)}
+.gcard h3{font-family:'Anton',sans-serif;font-weight:400;font-size:15px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ink2);margin-bottom:13px;display:flex;align-items:center;gap:8px}
+.gcard h3 .gl{font-family:'Anton';font-size:26px;color:var(--gold);line-height:.8}
+.trow{margin-bottom:11px}
+.trow:last-child{margin-bottom:0}
+.trow .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
+.trow .nm{display:flex;align-items:center;gap:7px;font-size:13.5px;font-weight:600}
+.trow .nm .fl{font-size:15px}
+.trow .vv{font-family:'JetBrains Mono',monospace;font-size:12.5px;font-weight:700}
+.trow .track{height:6px;background:var(--bg2);border-radius:3px;overflow:hidden}
+.trow .tk{height:100%;border-radius:3px;width:0;transition:width .9s cubic-bezier(.2,.8,.2,1)}
+.q1 .tk{background:var(--gold)} .q1 .vv{color:var(--gold)}
+.q2 .tk{background:var(--pitch)} .q2 .vv{color:var(--pitch)}
+.q3 .tk{background:var(--ink3)} .q3 .vv{color:var(--ink2)}
+.qleg{display:flex;gap:18px;margin-bottom:20px;flex-wrap:wrap}
+.qleg span{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--ink2);font-family:'JetBrains Mono',monospace}
+.qleg i{width:11px;height:11px;border-radius:3px;display:inline-block}
+
+/* ---------- methodology ---------- */
+.method{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+.mcard{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px}
+.mcard .ic{font-family:'Anton';font-size:13px;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px}
+.mcard p{font-size:13.5px;color:var(--ink2)}
+.mcard b{color:var(--ink)}
+.note{margin-top:24px;padding:16px 18px;border-left:2px solid var(--gold);background:var(--panel);border-radius:0 10px 10px 0;
+  font-size:12.5px;color:var(--ink2)}
+footer{margin-top:50px;padding-top:24px;border-top:1px solid var(--line);color:var(--ink3);font-size:11.5px;
+  font-family:'JetBrains Mono',monospace;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
+@media(max-width:620px){
+  .rrow{grid-template-columns:24px 1fr 56px}
+  .rrow .bar{display:none}
+  .tbl thead th.hidem,.tbl tbody td.hidem{display:none}
+}
+</style>
+</head>
+<body>
+<header>
+<div class="wrap">
+  <div class="kicker"><span class="dot"></span> Monte Carlo Projection · 10,000 simulated tournaments</div>
+  <h1><span class="out">FIFA</span> World Cup <span class="yr">2026</span></h1>
+  <p class="sub">A full simulation of all <b>104 matches</b> — the real groups, the real 48-team knockout bracket — run ten thousand times. Probabilities reflect how often each of the <b>48 teams</b> reached each stage. Strength driven by official <b>FIFA ranking points</b> (1 Apr 2026).</p>
+  <div class="statline">
+    <div class="stat"><div class="n">10<span class="u">K</span></div><div class="l">Simulations</div></div>
+    <div class="stat"><div class="n">48</div><div class="l">Teams</div></div>
+    <div class="stat"><div class="n">12</div><div class="l">Groups</div></div>
+    <div class="stat"><div class="n" id="favName">—</div><div class="l">Model favourite</div></div>
+  </div>
+</div>
+</header>
+
+<div class="wrap">
+  <div class="tabs">
+    <button class="tab on" data-s="race">Title Race</button>
+    <button class="tab" data-s="prog">Run Depth</button>
+    <button class="tab" data-s="groups">Group Stage</button>
+    <button class="tab" data-s="method">Methodology</button>
+  </div>
+
+  <!-- TITLE RACE -->
+  <section class="on" id="race">
+    <div class="sechead">
+      <div><h2>Who lifts the trophy?</h2><p>Share of 10,000 simulations a team finished as champion. Switch the metric to see how far they typically run.</p></div>
+      <div class="ctrls">
+        <div class="seg" id="raceMetric">
+          <button class="on" data-m="win">Win</button>
+          <button data-m="final">Final</button>
+          <button data-m="sf">Semis</button>
+          <button data-m="qf">Quarters</button>
+        </div>
+      </div>
+    </div>
+    <div class="race" id="raceBars"></div>
+  </section>
+
+  <!-- PROGRESSION -->
+  <section id="prog">
+    <div class="sechead">
+      <div><h2>Run-depth matrix</h2><p>Probability each team reaches a given round. Click any column to sort; filter by confederation or search.</p></div>
+      <div class="ctrls">
+        <div class="seg" id="confFilter">
+          <button class="on" data-c="ALL">All</button>
+          <button data-c="UEFA">UEFA</button>
+          <button data-c="CONMEBOL">CONMEBOL</button>
+          <button data-c="CAF">CAF</button>
+          <button data-c="CONCACAF">CONCACAF</button>
+          <button data-c="AFC">AFC</button>
+        </div>
+        <input class="search" id="searchBox" placeholder="Search team…">
+      </div>
+    </div>
+    <table class="tbl">
+      <thead><tr>
+        <th data-k="rk">#</th>
+        <th data-k="team">Team</th>
+        <th data-k="group" class="hidem">Grp</th>
+        <th data-k="r32">R32</th>
+        <th data-k="r16">R16</th>
+        <th data-k="qf">QF</th>
+        <th data-k="sf">Semis</th>
+        <th data-k="final">Final</th>
+        <th data-k="win" class="sorted">Win</th>
+      </tr></thead>
+      <tbody id="progBody"></tbody>
+    </table>
+  </section>
+
+  <!-- GROUPS -->
+  <section id="groups">
+    <div class="sechead">
+      <div><h2>Chance of reaching the Round of 32</h2><p>Top two from each group go through automatically — plus the eight best third-placed teams, which is why several third seeds clear 50%.</p></div>
+    </div>
+    <div class="qleg">
+      <span><i style="background:var(--gold)"></i> Likely group winner tier</span>
+      <span><i style="background:var(--pitch)"></i> Strong qualifier</span>
+      <span><i style="background:var(--ink3)"></i> On the bubble</span>
+    </div>
+    <div class="ggrid" id="groupGrid"></div>
+  </section>
+
+  <!-- METHOD -->
+  <section id="method">
+    <div class="sechead"><div><h2>How the engine works</h2><p>A transparent, reproducible pipeline — no black box.</p></div></div>
+    <div class="method">
+      <div class="mcard"><div class="ic">01 · Strength</div><p>Each team's strength is its <b>official FIFA / Coca-Cola ranking points</b> from the 1 April 2026 update — the last before the tournament. FIFA's formula is Elo-based, so it already encodes squad quality and recent form across all 48 teams.</p></div>
+      <div class="mcard"><div class="ic">02 · Match model</div><p>Every game is two independent <b>Poisson goal draws</b>. Expected goals are set by the rating gap, calibrated so an evenly-matched game draws about <b>26%</b> of the time — realistic for international football. Hosts get a modest home-crowd boost.</p></div>
+      <div class="mcard"><div class="ic">03 · Structure</div><p>The <b>real confirmed groups</b> and the <b>real fixed knockout bracket</b> (R32 → R16 → QF → SF → Final). Group ties break on points → goal difference → goals scored; the eight best third-placed teams slot into FIFA's eligible Round-of-32 positions.</p></div>
+      <div class="mcard"><div class="ic">04 · Knockouts</div><p>Drawn knockout games go to a <b>penalty model</b> — a near coin-flip with a slight edge to the stronger side. The whole 104-match tournament is replayed <b>10,000 times</b> and outcomes are tallied per team.</p></div>
+    </div>
+    <div class="note"><b>Reading the numbers.</b> These are probabilities, not predictions. A 15% favourite still <i>fails</i> to win 85 times out of 100 — the spread across the top tier is exactly the point. The model knows nothing about injuries, in-tournament form, tactics or red cards; it's a clean baseline built from ratings and structure.</div>
+  </section>
+
+  <footer>
+    <span>WORLD CUP 2026 · MONTE CARLO · N=10,000</span>
+    <span>STRENGTH: FIFA RANKING PTS (01 APR 2026)</span>
+  </footer>
+</div>
+
+<script>
+const DATA = {"n":10000,"teams":[{"team":"France","group":"I","conf":"UEFA","rating":1877.32,"r32":98.3,"r16":78.3,"qf":56.8,"sf":38.9,"final":24.0,"win":15.2},{"team":"Argentina","group":"J","conf":"CONMEBOL","rating":1874.81,"r32":98.9,"r16":68.5,"qf":51.0,"sf":36.1,"final":22.9,"win":13.9},{"team":"Spain","group":"H","conf":"UEFA","rating":1876.4,"r32":99.2,"r16":72.1,"qf":50.3,"sf":36.2,"final":23.3,"win":13.8},{"team":"England","group":"L","conf":"UEFA","rating":1825.97,"r32":97.4,"r16":71.4,"qf":46.0,"sf":28.8,"final":17.2,"win":9.6},{"team":"Brazil","group":"C","conf":"CONMEBOL","rating":1761.16,"r32":96.2,"r16":59.5,"qf":36.6,"sf":19.1,"final":9.4,"win":4.7},{"team":"Portugal","group":"K","conf":"UEFA","rating":1763.83,"r32":94.1,"r16":59.2,"qf":36.0,"sf":18.4,"final":9.1,"win":4.6},{"team":"Morocco","group":"C","conf":"CAF","rating":1755.87,"r32":96.4,"r16":58.2,"qf":35.7,"sf":18.9,"final":9.0,"win":4.1},{"team":"Belgium","group":"G","conf":"UEFA","rating":1734.71,"r32":95.8,"r16":63.8,"qf":35.2,"sf":17.4,"final":8.8,"win":4.0},{"team":"Netherlands","group":"F","conf":"UEFA","rating":1757.87,"r32":92.7,"r16":49.9,"qf":31.7,"sf":16.5,"final":8.1,"win":3.9},{"team":"Mexico","group":"A","conf":"CONCACAF","rating":1681.03,"r32":94.4,"r16":64.2,"qf":33.4,"sf":17.1,"final":8.3,"win":3.8},{"team":"USA","group":"D","conf":"CONCACAF","rating":1673.13,"r32":90.3,"r16":58.0,"qf":31.7,"sf":15.2,"final":7.5,"win":3.5},{"team":"Germany","group":"E","conf":"UEFA","rating":1730.37,"r32":96.4,"r16":61.4,"qf":29.5,"sf":15.4,"final":7.2,"win":3.2},{"team":"Croatia","group":"L","conf":"UEFA","rating":1717.07,"r32":90.7,"r16":54.2,"qf":27.8,"sf":14.3,"final":6.8,"win":3.0},{"team":"Senegal","group":"I","conf":"CAF","rating":1688.99,"r32":82.4,"r16":48.8,"qf":24.3,"sf":11.1,"final":5.1,"win":2.0},{"team":"Colombia","group":"K","conf":"CONMEBOL","rating":1693.09,"r32":87.1,"r16":45.4,"qf":23.1,"sf":10.8,"final":4.8,"win":1.9},{"team":"Uruguay","group":"H","conf":"CONMEBOL","rating":1673.07,"r32":89.9,"r16":37.8,"qf":18.9,"sf":9.7,"final":4.2,"win":1.6},{"team":"Switzerland","group":"B","conf":"UEFA","rating":1649.4,"r32":90.2,"r16":51.3,"qf":22.4,"sf":8.7,"final":3.4,"win":1.2},{"team":"Japan","group":"F","conf":"AFC","rating":1660.43,"r32":82.3,"r16":36.1,"qf":18.8,"sf":8.1,"final":3.2,"win":1.1},{"team":"Canada","group":"B","conf":"CONCACAF","rating":1556.48,"r32":86.8,"r16":45.6,"qf":18.4,"sf":6.2,"final":2.1,"win":0.7},{"team":"Iran","group":"G","conf":"AFC","rating":1615.3,"r32":86.1,"r16":44.2,"qf":17.6,"sf":6.5,"final":2.3,"win":0.6},{"team":"South Korea","group":"A","conf":"AFC","rating":1588.66,"r32":76.8,"r16":38.6,"qf":14.2,"sf":4.7,"final":1.4,"win":0.5},{"team":"Turkiye","group":"D","conf":"UEFA","rating":1599.04,"r32":69.2,"r16":31.8,"qf":11.9,"sf":4.0,"final":1.2,"win":0.4},{"team":"Ecuador","group":"E","conf":"CONMEBOL","rating":1594.78,"r32":84.9,"r16":37.5,"qf":13.6,"sf":4.8,"final":1.7,"win":0.4},{"team":"Austria","group":"J","conf":"UEFA","rating":1593.45,"r32":72.8,"r16":24.5,"qf":10.9,"sf":4.2,"final":1.4,"win":0.4},{"team":"Australia","group":"D","conf":"AFC","rating":1580.67,"r32":65.7,"r16":28.6,"qf":10.0,"sf":3.4,"final":1.1,"win":0.3},{"team":"Egypt","group":"G","conf":"CAF","rating":1563.24,"r32":77.1,"r16":35.4,"qf":12.2,"sf":3.8,"final":1.0,"win":0.3},{"team":"Algeria","group":"J","conf":"CAF","rating":1564.26,"r32":66.4,"r16":20.4,"qf":7.9,"sf":2.6,"final":0.8,"win":0.3},{"team":"Czechia","group":"A","conf":"UEFA","rating":1501.38,"r32":58.5,"r16":23.8,"qf":7.0,"sf":1.8,"final":0.5,"win":0.2},{"team":"Ivory Coast","group":"E","conf":"CAF","rating":1532.98,"r32":74.1,"r16":28.3,"qf":8.8,"sf":2.9,"final":0.8,"win":0.2},{"team":"Norway","group":"I","conf":"UEFA","rating":1550.94,"r32":54.4,"r16":23.5,"qf":8.4,"sf":2.6,"final":0.7,"win":0.2},{"team":"Panama","group":"L","conf":"CONCACAF","rating":1540.64,"r32":61.8,"r16":22.3,"qf":8.1,"sf":2.6,"final":0.7,"win":0.2},{"team":"Scotland","group":"C","conf":"UEFA","rating":1498.35,"r32":59.4,"r16":18.3,"qf":5.9,"sf":1.5,"final":0.3,"win":0.1},{"team":"Paraguay","group":"D","conf":"CONMEBOL","rating":1503.5,"r32":46.7,"r16":15.8,"qf":4.5,"sf":1.2,"final":0.3,"win":0.1},{"team":"Tunisia","group":"F","conf":"CAF","rating":1483.05,"r32":42.2,"r16":11.4,"qf":3.4,"sf":0.8,"final":0.2,"win":0.1},{"team":"Sweden","group":"F","conf":"UEFA","rating":1514.77,"r32":51.9,"r16":16.1,"qf":5.3,"sf":1.5,"final":0.3,"win":0.1},{"team":"South Africa","group":"A","conf":"CAF","rating":1429.73,"r32":39.7,"r16":12.4,"qf":2.9,"sf":0.6,"final":0.1,"win":0.0},{"team":"Qatar","group":"B","conf":"AFC","rating":1454.96,"r32":55.9,"r16":18.8,"qf":4.8,"sf":0.9,"final":0.2,"win":0.0},{"team":"Bosnia & Herzegovina","group":"B","conf":"UEFA","rating":1385.84,"r32":38.2,"r16":9.9,"qf":1.7,"sf":0.2,"final":0.0,"win":0.0},{"team":"Haiti","group":"C","conf":"CONCACAF","rating":1291.71,"r32":11.8,"r16":1.6,"qf":0.2,"sf":0.0,"final":0.0,"win":0.0},{"team":"Curacao","group":"E","conf":"CONCACAF","rating":1294.65,"r32":16.1,"r16":2.4,"qf":0.3,"sf":0.0,"final":0.0,"win":0.0},{"team":"New Zealand","group":"G","conf":"OFC","rating":1281.57,"r32":13.0,"r16":2.1,"qf":0.2,"sf":0.0,"final":0.0,"win":0.0},{"team":"Saudi Arabia","group":"H","conf":"AFC","rating":1421.43,"r32":38.9,"r16":7.1,"qf":1.9,"sf":0.3,"final":0.1,"win":0.0},{"team":"Cape Verde","group":"H","conf":"CAF","rating":1366.13,"r32":26.7,"r16":4.0,"qf":0.7,"sf":0.1,"final":0.0,"win":0.0},{"team":"Iraq","group":"I","conf":"AFC","rating":1447.14,"r32":27.8,"r16":8.5,"qf":2.3,"sf":0.5,"final":0.1,"win":0.0},{"team":"Jordan","group":"J","conf":"AFC","rating":1391.45,"r32":24.2,"r16":4.2,"qf":0.9,"sf":0.1,"final":0.0,"win":0.0},{"team":"Uzbekistan","group":"K","conf":"AFC","rating":1465.34,"r32":41.0,"r16":10.4,"qf":2.7,"sf":0.7,"final":0.2,"win":0.0},{"team":"DR Congo","group":"K","conf":"CAF","rating":1478.35,"r32":44.2,"r16":11.7,"qf":3.2,"sf":0.8,"final":0.1,"win":0.0},{"team":"Ghana","group":"L","conf":"CAF","rating":1346.31,"r32":15.1,"r16":2.7,"qf":0.6,"sf":0.1,"final":0.0,"win":0.0}],"groups":{"A":["Mexico","South Korea","South Africa","Czechia"],"B":["Canada","Switzerland","Qatar","Bosnia & Herzegovina"],"C":["Brazil","Morocco","Scotland","Haiti"],"D":["USA","Paraguay","Australia","Turkiye"],"E":["Germany","Ecuador","Ivory Coast","Curacao"],"F":["Netherlands","Japan","Tunisia","Sweden"],"G":["Belgium","Iran","Egypt","New Zealand"],"H":["Spain","Uruguay","Saudi Arabia","Cape Verde"],"I":["France","Senegal","Norway","Iraq"],"J":["Argentina","Austria","Algeria","Jordan"],"K":["Portugal","Colombia","Uzbekistan","DR Congo"],"L":["England","Croatia","Panama","Ghana"]}};
+const FLAG = {
+ "France":"🇫🇷","Argentina":"🇦🇷","Spain":"🇪🇸","England":"🏴󠁧󠁢󠁥󠁮󠁧󠁿","Brazil":"🇧🇷","Portugal":"🇵🇹","Morocco":"🇲🇦",
+ "Belgium":"🇧🇪","Netherlands":"🇳🇱","Mexico":"🇲🇽","USA":"🇺🇸","Germany":"🇩🇪","Croatia":"🇭🇷","Senegal":"🇸🇳",
+ "Colombia":"🇨🇴","Uruguay":"🇺🇾","Switzerland":"🇨🇭","Japan":"🇯🇵","Canada":"🇨🇦","Iran":"🇮🇷","South Korea":"🇰🇷",
+ "Turkiye":"🇹🇷","Ecuador":"🇪🇨","Austria":"🇦🇹","Australia":"🇦🇺","Egypt":"🇪🇬","Algeria":"🇩🇿","Czechia":"🇨🇿",
+ "Ivory Coast":"🇨🇮","Norway":"🇳🇴","Panama":"🇵🇦","Scotland":"🏴󠁧󠁢󠁳󠁣󠁴󠁿","Paraguay":"🇵🇾","Sweden":"🇸🇪","DR Congo":"🇨🇩",
+ "Uzbekistan":"🇺🇿","Tunisia":"🇹🇳","Saudi Arabia":"🇸🇦","Qatar":"🇶🇦","Cape Verde":"🇨🇻","South Africa":"🇿🇦",
+ "Bosnia & Herzegovina":"🇧🇦","Iraq":"🇮🇶","Jordan":"🇯🇴","Ghana":"🇬🇭","Haiti":"🇭🇹","Curacao":"🇨🇼","New Zealand":"🇳🇿"
+};
+const HOSTS=["USA","Mexico","Canada"];
+const teams = DATA.teams;
+document.getElementById('favName').textContent = teams[0].team;
+
+/* ---- tabs ---- */
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('section').forEach(x=>x.classList.remove('on'));
+  t.classList.add('on'); const s=document.getElementById(t.dataset.s); s.classList.add('on');
+  if(t.dataset.s==='race') drawRace(curMetric);
+  if(t.dataset.s==='groups') drawGroups();
+});
+
+/* ---- title race ---- */
+let curMetric='win';
+function drawRace(m){
+  curMetric=m;
+  const sorted=[...teams].sort((a,b)=>b[m]-a[m]).slice(0,16);
+  const max=sorted[0][m];
+  const el=document.getElementById('raceBars'); el.innerHTML='';
+  sorted.forEach((t,i)=>{
+    const host=HOSTS.includes(t.team);
+    const row=document.createElement('div'); row.className='rrow';
+    row.innerHTML=`<div class="rk">${i+1}</div>
+      <div class="tm"><span class="fl">${FLAG[t.team]||'⚽'}</span>
+        <span>${t.team}${host?' <span class="host-badge">HOST</span>':''}</span></div>
+      <div class="bar"><div class="fill" data-w="${(t[m]/max*100)}"></div></div>
+      <div class="pct">${t[m].toFixed(1)}%</div>`;
+    el.appendChild(row);
+  });
+  requestAnimationFrame(()=>el.querySelectorAll('.fill').forEach((f,i)=>{
+    setTimeout(()=>f.style.width=f.dataset.w+'%', 40*i);
+  }));
+}
+document.querySelectorAll('#raceMetric button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#raceMetric button').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on'); drawRace(b.dataset.m);
+});
+
+/* ---- progression table ---- */
+let sortK='win', sortDir=-1, confF='ALL', q='';
+const COLS=['r32','r16','qf','sf','final','win'];
+function drawProg(){
+  let rows=teams.filter(t=>(confF==='ALL'||t.conf===confF)&&t.team.toLowerCase().includes(q));
+  rows.sort((a,b)=> sortK==='team'? sortDir*a.team.localeCompare(b.team)
+                 : sortK==='group'? sortDir*a.group.localeCompare(b.group)
+                 : sortK==='rk'? 0 : sortDir*(a[sortK]-b[sortK]));
+  const maxes={}; COLS.forEach(c=>maxes[c]=Math.max(...teams.map(t=>t[c])));
+  const tb=document.getElementById('progBody'); tb.innerHTML='';
+  rows.forEach((t,i)=>{
+    const host=HOSTS.includes(t.team);
+    const tr=document.createElement('tr');
+    let cells=`<td>${i+1}</td>
+      <td class="tname"><span class="fl">${FLAG[t.team]||'⚽'}</span>${t.team}${host?' <span class="host-badge">★</span>':''}</td>
+      <td class="gp hidem">${t.group}</td>`;
+    COLS.forEach(c=>{
+      cells+=`<td class="cellbar ${c}" style="--w:${(t[c]/maxes[c]).toFixed(3)}">${t[c].toFixed(1)}</td>`;
+    });
+    tr.innerHTML=cells; tb.appendChild(tr);
+  });
+  document.querySelectorAll('.tbl thead th').forEach(th=>th.classList.toggle('sorted',th.dataset.k===sortK));
+}
+document.querySelectorAll('.tbl thead th').forEach(th=>th.onclick=()=>{
+  const k=th.dataset.k; if(k==='rk')return;
+  if(sortK===k) sortDir*=-1; else {sortK=k; sortDir=(k==='team'||k==='group')?1:-1;}
+  drawProg();
+});
+document.querySelectorAll('#confFilter button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#confFilter button').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on'); confF=b.dataset.c; drawProg();
+});
+document.getElementById('searchBox').oninput=e=>{q=e.target.value.toLowerCase().trim();drawProg();};
+
+/* ---- groups ---- */
+function drawGroups(){
+  const grid=document.getElementById('groupGrid'); grid.innerHTML='';
+  Object.entries(DATA.groups).forEach(([g,names])=>{
+    const rows=names.map(n=>teams.find(t=>t.team===n)).sort((a,b)=>b.r32-a.r32);
+    const card=document.createElement('div'); card.className='gcard';
+    let html=`<h3><span class="gl">${g}</span> Group ${g}</h3>`;
+    rows.forEach((t,i)=>{
+      const cls= i===0?'q1':i===1?'q2':'q3';
+      html+=`<div class="trow ${cls}">
+        <div class="top"><span class="nm"><span class="fl">${FLAG[t.team]||'⚽'}</span>${t.team}</span>
+          <span class="vv">${t.r32.toFixed(0)}%</span></div>
+        <div class="track"><div class="tk" data-w="${t.r32}"></div></div></div>`;
+    });
+    card.innerHTML=html; grid.appendChild(card);
+  });
+  requestAnimationFrame(()=>grid.querySelectorAll('.tk').forEach((k,i)=>{
+    setTimeout(()=>k.style.width=k.dataset.w+'%',25*i);
+  }));
+}
+
+drawRace('win'); drawProg();
+</script>
+</body>
+</html>
